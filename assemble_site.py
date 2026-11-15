@@ -1,8 +1,53 @@
 """Verify a public playtest bundle and reconstruct its unmodified Godot runtime."""
 from pathlib import Path
 import hashlib
+import io
 import json
 import shutil
+import tempfile
+import urllib.request
+import zipfile
+
+ENGINE_URL = "https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_export_templates.tpz"
+ENGINE_ARCHIVE_SHA256 = "f298490b8d44d934be425a5a65a51bf15f422428b229a06a6e11d9ffea248011"
+ENGINE_WASM_SHA256 = "fc74679e3b97f76878947fcd4fbe1268cbfa6188182a2e33bbc3f5dc9bfa57d0"
+
+
+def supply_official_runtime(root, wasm):
+    """Use the verified vendor runtime if GitHub transport omitted binary parts."""
+    if wasm["sha256"] != ENGINE_WASM_SHA256:
+        raise ValueError("Only the independently verified pinned engine is supported")
+    cached = root / ".engine-cache" / "godot.wasm"
+    raw = cached.read_bytes() if cached.is_file() else b""
+    if hashlib.sha256(raw).hexdigest() != ENGINE_WASM_SHA256:
+        with tempfile.TemporaryDirectory() as temporary:
+            archive = Path(temporary) / "templates.tpz"
+            digest = hashlib.sha256()
+            with urllib.request.urlopen(ENGINE_URL, timeout=120) as response, archive.open("wb") as output:
+                while block := response.read(1024 * 1024):
+                    digest.update(block)
+                    output.write(block)
+            if digest.hexdigest() != ENGINE_ARCHIVE_SHA256:
+                raise ValueError("Official engine archive checksum mismatch")
+            with zipfile.ZipFile(archive) as outer:
+                inner = outer.read("templates/web_nothreads_release.zip")
+            with zipfile.ZipFile(io.BytesIO(inner)) as template:
+                raw = template.read("godot.wasm")
+        if hashlib.sha256(raw).hexdigest() != ENGINE_WASM_SHA256:
+            raise ValueError("Official runtime does not match the tested export")
+        cached.parent.mkdir(parents=True, exist_ok=True)
+        cached.write_bytes(raw)
+    offset = 0
+    for index, part in enumerate(wasm["parts"]):
+        if part["path"] != f"index.wasm.part-{index:03d}" or not isinstance(part["size"], int) or part["size"] <= 0:
+            raise ValueError("Unexpected runtime part layout")
+        data = raw[offset:offset + part["size"]]
+        if hashlib.sha256(data).hexdigest() != part["sha256"]:
+            raise ValueError("Official engine part differs from tested bundle")
+        (root / part["path"]).write_bytes(data)
+        offset += part["size"]
+    if offset != len(raw):
+        raise ValueError("Unexpected runtime size")
 
 
 def checked_path(root, name):
@@ -32,6 +77,8 @@ def assemble(root, output):
     wasm = manifest["wasm"]
     if wasm["path"] != "index.wasm" or not wasm["parts"]:
         raise ValueError("Unexpected runtime layout")
+    if any(not (root / part["path"]).is_file() for part in wasm["parts"]):
+        supply_official_runtime(root, wasm)
     parts = []
     for index, part in enumerate(wasm["parts"]):
         if part["path"] != f"index.wasm.part-{index:03d}":
