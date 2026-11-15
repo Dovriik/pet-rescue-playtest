@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#292b46">
+  <meta name="description" content="A cute pet-rescue match-3 playtest. Play the campaign, learn pet magic, or unwind in the Zen garden.">
+  <title>Pet Rescue · Playtest</title>
+  <style>
+    :root { color-scheme:light; font-family:system-ui,sans-serif; background:#292b46; color:#49384f; }
+    * { box-sizing:border-box; }
+    html,body { margin:0; width:100%; height:100%; overflow:hidden; }
+    #canvas { display:block; position:fixed; inset:0; margin:auto; width:min(100vw,56.25vh); height:min(177.7778vw,100vh); width:min(100vw,56.25dvh); height:min(177.7778vw,100dvh); touch-action:none; outline:none; }
+    #welcome { position:fixed; inset:0; display:grid; place-items:center; padding:20px; background:radial-gradient(ellipse at 25% 20%,#dcefe7,#eee1f2 65%,#c7b8d8); z-index:2; }
+    #card { width:min(100%,460px); max-height:95dvh; overflow:auto; border:1px solid #e2d4e6; border-radius:28px; padding:30px 28px; background:#fff9f0; text-align:center; box-shadow:0 18px 65px #292b4622; }
+    h1 { margin:12px 0 8px; font-size:clamp(30px,7vw,42px); letter-spacing:-1px; }
+    .paw { font-size:42px; }
+    p { line-height:1.55; }
+    .quiet { font-size:13px; color:#74677c; }
+    #play { border:2px solid #baa0cb; border-radius:18px; background:#dac8e8; color:#49384f; font:700 21px system-ui; min-height:58px; width:100%; margin:10px 0; cursor:pointer; }
+    #play:focus-visible { outline:4px solid #c18a30; outline-offset:3px; }
+    #play:disabled { opacity:.65; cursor:wait; }
+    #progress { width:100%; accent-color:#9d76b5; display:none; }
+    #status { min-height:25px; font-size:14px; }
+    a { color:#65467b; }
+    #reload { display:none; }
+    [hidden] { display:none!important; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="720" height="1280" tabindex="0" aria-label="Pet Rescue game"></canvas>
+  <main id="welcome">
+    <section id="card" aria-labelledby="title">
+      <div class="paw" aria-hidden="true">🐾</div>
+      <h1 id="title">Pet Rescue</h1>
+      <p>Little paws. Lovely magic. Happy rescues.</p>
+      <p><strong>50 campaign levels</strong>, two friendly lessons,<br>and an untimed Zen garden.</p>
+      <button id="play" type="button">Play</button>
+      <progress id="progress" max="100" value="0" aria-label="Loading game"></progress>
+      <div id="status" role="status" aria-live="polite">Touch or mouse · No installation needed</div>
+      <a id="reload" href="./">Reload the playtest</a>
+      <p class="quiet">Your progress stays in this browser on this device. Clearing browser data or using private browsing may remove it. No account is needed. This playtest has no payments or ads.</p>
+      <p class="quiet">Testing with a friend? Share the page link. Tell the person who shared it your level number, device and what happened if something feels wrong.</p>
+      <p class="quiet">Playtest 0.5.0-playtest.2026-11-16 · <a href="NOTICE.md">Credits</a><br>Made with <a href="https://godotengine.org/license" target="_blank" rel="noopener noreferrer">Godot Engine</a></p>
+      <noscript>This game needs JavaScript enabled in your browser.</noscript>
+    </section>
+  </main>
+  <script src="index.js"></script>
+  <script>
+    'use strict';
+    const config = {"args":[],"canvasResizePolicy":1,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":3376988,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+    const play = document.getElementById('play');
+    const status = document.getElementById('status');
+    const progress = document.getElementById('progress');
+    const welcome = document.getElementById('welcome');
+    const canvas = document.getElementById('canvas');
+    let engine;
+    play.addEventListener('click', async () => {
+      play.disabled = true;
+      status.textContent = 'Loading your rescue garden…';
+      progress.style.display = 'block';
+      try {
+        if (typeof Engine === 'undefined' || !Engine.isWebGLAvailable(2)) {
+          throw new Error('This browser cannot start the game. Try a current browser with graphics acceleration enabled.');
+        }
+        engine = new Engine(config);
+        await engine.startGame({
+          canvas,
+          canvasResizePolicy: 0,
+          locale: 'en',
+          onProgress: (current, total) => {
+            if (total > 0) {
+              progress.value = Math.round(100 * current / total);
+              status.textContent = 'Loading your rescue garden… ' + progress.value + '%';
+            } else {
+              progress.removeAttribute('value');
+            }
+          },
+          onExit: () => { welcome.hidden = false; status.textContent = 'Thanks for playing! Reload to return to your garden.'; document.getElementById('reload').style.display = 'inline'; }
+        });
+        welcome.hidden = true;
+        canvas.focus();
+      } catch (error) {
+        console.error(error);
+        status.textContent = error.message || 'The game could not load. Please reload and try again.';
+        progress.style.display = 'none';
+        document.getElementById('reload').style.display = 'inline';
+      }
+    });
+  </script>
+</body>
+</html>
+

@@ -17,7 +17,16 @@ def supply_official_runtime(root, wasm):
     """Use the verified vendor runtime if GitHub transport omitted binary parts."""
     if wasm["sha256"] != ENGINE_WASM_SHA256:
         raise ValueError("Only the independently verified pinned engine is supported")
-    cached = root / ".engine-cache" / "godot.wasm"
+    for index, part in enumerate(wasm["parts"]):
+        if part["path"] != f"index.wasm.part-{index:03d}" or type(part["size"]) is not int or part["size"] <= 0:
+            raise ValueError("Unexpected runtime part layout")
+        destination = root / part["path"]
+        if destination.is_symlink() or (destination.exists() and not destination.is_file()):
+            raise ValueError("Runtime parts must be regular checkout files")
+    cache_directory = root / ".engine-cache"
+    cached = cache_directory / "godot.wasm"
+    if cache_directory.is_symlink() or cached.is_symlink():
+        raise ValueError("Runtime cache must not redirect outside the checkout")
     raw = cached.read_bytes() if cached.is_file() else b""
     if hashlib.sha256(raw).hexdigest() != ENGINE_WASM_SHA256:
         with tempfile.TemporaryDirectory() as temporary:
@@ -38,9 +47,7 @@ def supply_official_runtime(root, wasm):
         cached.parent.mkdir(parents=True, exist_ok=True)
         cached.write_bytes(raw)
     offset = 0
-    for index, part in enumerate(wasm["parts"]):
-        if part["path"] != f"index.wasm.part-{index:03d}" or not isinstance(part["size"], int) or part["size"] <= 0:
-            raise ValueError("Unexpected runtime part layout")
+    for part in wasm["parts"]:
         data = raw[offset:offset + part["size"]]
         if hashlib.sha256(data).hexdigest() != part["sha256"]:
             raise ValueError("Official engine part differs from tested bundle")
@@ -100,4 +107,3 @@ def assemble(root, output):
 
 if __name__ == "__main__":
     assemble(Path.cwd(), Path("_site"))
-

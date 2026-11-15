@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "version": "0.5.0-playtest.2026-11-16",
+  "levelCount": 50,
+  "builtAtUTC": "2026-11-15T19:57:23.333397+00:00",
+  "files": [
+    {
+      "path": ".nojekyll",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "GODOT_NOTICES.txt",
+      "size": 110969,
+      "sha256": "b02a86c77a131d86055925a396641903271919dafc6bf873d38337bf14d2e0c7"
+    },
+    {
+      "path": "index.audio.position.worklet.js",
+      "size": 2973,
+      "sha256": "be33985bc7160d6bf9646f259cd86b259cd67b02ccb297ee5c44f8ac84327bc8"
+    },
+    {
+      "path": "index.audio.worklet.js",
+      "size": 7298,
+      "sha256": "5b476a9c9ce642c0ee4256436d1bc31d9c38f868aca0f9a8e2a57c18d2dec2a3"
+    },
+    {
+      "path": "index.html",
+      "size": 5486,
+      "sha256": "9f80afe420dedff1251a934519a06df454621b63521152724515eeb3f13c6044"
+    },
+    {
+      "path": "index.js",
+      "size": 279815,
+      "sha256": "33c94cb3175f3333b82e2a3be5e8e86f77986f0aa2042b1631f6367a4e5bb6ba"
+    },
+    {
+      "path": "index.pck",
+      "size": 3376988,
+      "sha256": "c42f517bc0a23d83ede3a5511b300eea75e8dcc9ee8018956a24422c2f721954"
+    },
+    {
+      "path": "index.png",
+      "size": 21443,
+      "sha256": "3cb4495c0b98dfbe4b663cbf2b6836473572339beb66d902367893162a70be0e"
+    },
+    {
+      "path": "NOTICE.md",
+      "size": 826,
+      "sha256": "d21a495c4900d030f285ce6be6e456643d94e118309db7fb88690d4309d37144"
+    },
+    {
+      "path": "README.md",
+      "size": 989,
+      "sha256": "2d6f1602bd57b4179f6831fe6ebed5308c6ee44acef82e6807d4891a678ce0a3"
+    }
+  ],
+  "wasm": {
+    "path": "index.wasm",
+    "size": 39514754,
+    "sha256": "fc74679e3b97f76878947fcd4fbe1268cbfa6188182a2e33bbc3f5dc9bfa57d0",
+    "parts": [
+      {
+        "path": "index.wasm.part-000",
+        "size": 16777216,
+        "sha256": "637fc7be2e6c8cff1a32a2fd4aed411c05ac1ef10c6a7b925365638f3f0527e2"
+      },
+      {
+        "path": "index.wasm.part-001",
+        "size": 16777216,
+        "sha256": "7aebdd16b11ac91d1fcd39c0923997f5a73a3d17263a6ebf6f4722167d94a0ed"
+      },
+      {
+        "path": "index.wasm.part-002",
+        "size": 5960322,
+        "sha256": "219249da87c3cfda9a89fba24e253e60d6efd5191d0b108120ad93e51e54d707"
+      }
+    ]
+  }
+}
