@@ -25,9 +25,9 @@ def assemble(root, output):
     manifest = json.loads(checked_path(root, "playtest-manifest.json").read_text(encoding="utf-8"))
     if manifest.get("schemaVersion") != 1 or manifest.get("levelCount") != 50:
         raise ValueError("Expected the reviewed fifty-level playtest")
-    allowed = {"index.html", "index.js", "index.pck", "index.png", "index.audio.worklet.js", "index.audio.position.worklet.js", "README.md", "NOTICE.txt", ".nojekyll"}
+    allowed = {"index.html", "index.js", "index.pck", "index.png", "index.audio.worklet.js", "index.audio.position.worklet.js", "README.md", "NOTICE.md", "GODOT_NOTICES.txt", ".nojekyll"}
     paths = [entry["path"] for entry in manifest["files"]]
-    if len(paths) != len(set(paths)) or not set(paths).issubset(allowed) or not {"index.html", "index.js", "index.pck", "NOTICE.txt", ".nojekyll"}.issubset(paths):
+    if len(paths) != len(set(paths)) or not set(paths).issubset(allowed) or not {"index.html", "index.js", "index.pck", "NOTICE.md", "GODOT_NOTICES.txt", ".nojekyll"}.issubset(paths):
         raise ValueError("Public bundle contains unexpected or missing files")
     wasm = manifest["wasm"]
     if wasm["path"] != "index.wasm" or not wasm["parts"]:
@@ -53,3 +53,4 @@ def assemble(root, output):
 
 if __name__ == "__main__":
     assemble(Path.cwd(), Path("_site"))
+
